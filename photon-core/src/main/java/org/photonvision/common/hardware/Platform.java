@@ -27,23 +27,23 @@ import org.photonvision.common.util.ShellExec;
 @SuppressWarnings("unused")
 public enum Platform {
     // WPILib Supported (JNI)
-    WINDOWS_64("Windows x64", false, OSType.WINDOWS, true),
-    LINUX_32("Linux x86", false, OSType.LINUX, true),
-    LINUX_64("Linux x64", false, OSType.LINUX, true),
+    WINDOWS_64("Windows x64", "winx64", false, OSType.WINDOWS, true),
+    LINUX_32("Linux x86", "linuxx64", false, OSType.LINUX, true),
+    LINUX_64("Linux x64", "linuxx64", false, OSType.LINUX, true),
     LINUX_RASPBIAN32(
-            "Linux Raspbian 32-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 32-bit image
+            "Linux Raspbian 32-bit", "linuxarm32", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 32-bit image
     LINUX_RASPBIAN64(
-            "Linux Raspbian 64-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 64-bit image
-    LINUX_AARCH64("Linux AARCH64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
+            "Linux Raspbian 64-bit", "linuxarm64",true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 64-bit image
+    LINUX_AARCH64("Linux AARCH64", "linuxarm64",false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
-    LINUX_ARM32("Linux ARM32", false, OSType.LINUX, true), // ODROID XU4, C1+
-    LINUX_ARM64("Linux ARM64", false, OSType.LINUX, true), // ODROID C2, N2
+    LINUX_ARM32("Linux ARM32", "linuxarm32", false, OSType.LINUX, true), // ODROID XU4, C1+
+    LINUX_ARM64("Linux ARM64", "linuxarm64", false, OSType.LINUX, true), // ODROID C2, N2
 
     // Completely unsupported
-    WINDOWS_32("Windows x86", false, OSType.WINDOWS, false),
-    MACOS("Mac OS", false, OSType.MACOS, false),
-    UNKNOWN("Unsupported Platform", false, OSType.UNKNOWN, false);
+    WINDOWS_32("Windows x86", "winx64", false, OSType.WINDOWS, false),
+    MACOS("Mac OS", "osxuniversal", false, OSType.MACOS, false),
+    UNKNOWN("Unsupported Platform", "any", false, OSType.UNKNOWN, false);
 
     private enum OSType {
         WINDOWS,
@@ -54,6 +54,7 @@ public enum Platform {
 
     private static final ShellExec shell = new ShellExec(true, false);
     public final String description;
+    public final String nativeLibraryFolderName;
     public final boolean isPi;
     public final OSType osType;
     public final boolean isSupported;
@@ -62,11 +63,12 @@ public enum Platform {
     private static final Platform currentPlatform = getCurrentPlatform();
     private static final boolean isRoot = checkForRoot();
 
-    Platform(String description, boolean isPi, OSType osType, boolean isSupported) {
+    Platform(String description, String nativeLibFolderName, boolean isPi, OSType osType, boolean isSupported) {
         this.description = description;
         this.isPi = isPi;
         this.osType = osType;
         this.isSupported = isSupported;
+        this.nativeLibraryFolderName = nativeLibFolderName;
     }
 
     //////////////////////////////////////////////////////
@@ -87,6 +89,10 @@ public enum Platform {
         } else {
             return currentPlatform.description;
         }
+    }
+
+    public static final String getNativeLibraryFolderName() {
+        return currentPlatform.nativeLibraryFolderName;
     }
 
     public static boolean isRoot() {
@@ -195,6 +201,11 @@ public enum Platform {
     private static boolean isBuster() {
         // TODO - this is a total guess
         return fileHasText("/etc/os-release", "Buster");
+    }
+
+    public static boolean isWindows() {
+        var p = getCurrentPlatform();
+        return (p == WINDOWS_32 || p == WINDOWS_64);
     }
 
     private static boolean fileHasText(String filename, String text) {

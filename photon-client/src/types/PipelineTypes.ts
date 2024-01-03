@@ -5,7 +5,8 @@ export enum PipelineType {
   Reflective = 2,
   ColoredShape = 3,
   AprilTag = 4,
-  Aruco = 5
+  Aruco = 5,
+  RKNN = 6
 }
 
 export enum AprilTagFamily {
@@ -281,14 +282,27 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   doSingleTargetAlways: false
 };
 
+export interface RKNNPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.RKNN;
+}
+
+export type ConfigurableRKNNPipelineSettings = Partial<Omit<RKNNPipelineSettings, "pipelineType">> &
+  ConfigurablePipelineSettings;
+export const DefaultRKNNPipelineSettings: RKNNPipelineSettings = {
+  ...DefaultPipelineSettings,
+  pipelineType: PipelineType.RKNN
+};
+
 export type ActivePipelineSettings =
   | ReflectivePipelineSettings
   | ColoredShapePipelineSettings
   | AprilTagPipelineSettings
-  | ArucoPipelineSettings;
+  | ArucoPipelineSettings
+  | RKNNPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
   | ConfigurableColoredShapePipelineSettings
   | ConfigurableAprilTagPipelineSettings
-  | ConfigurableArucoPipelineSettings;
+  | ConfigurableArucoPipelineSettings
+  | ConfigurableRKNNPipelineSettings;
