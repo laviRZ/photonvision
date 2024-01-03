@@ -90,7 +90,7 @@
      times.add(System.nanoTime());
      var results = rknnjni.detectAndDisplay(processed.getNativeObjAddr());
      times.add(System.nanoTime());
-     for (int i = 0; i < results.count; i++) {
+     for (int i = 0; results != null && i < results.count; i++) {
        var detection = results.results[i];
        var box = detection.box;
  

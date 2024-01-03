@@ -68,10 +68,13 @@ public class RKNNJNI extends PhotonJniCommon {
   }
 
   public void init() {
-    aiAddr = initAi("/home/orangepi/garbest.rknn");
+    aiAddr = initAi("/home/ubuntu/garbest.rknn");
   }
 
   public DetectionResultGroup detectAndDisplay(long frameAddr) {
+		if (aiAddr == 0) {
+			return null;
+		}
 		// var timeBefore = System.nanoTime();
     var res = detectAndDisplay(aiAddr, frameAddr);
 		// var timeAfter = System.nanoTime();
