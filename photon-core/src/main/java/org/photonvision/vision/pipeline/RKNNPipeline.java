@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -50,7 +51,7 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         this.settings = settings;
 
         this.rknnjni = new RKNNJNI();
-        this.rknnjni.init();
+        this.rknnjni.init(PathManager.getInstance().getRootFolder() + "/model.rknn");
     }
 
     @Override

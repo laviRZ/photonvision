@@ -70,8 +70,8 @@ public class RKNNJNI extends PhotonJniCommon {
         forceLoad(RKNNJNI.class, "jnish");
     }
 
-    public void init() {
-        aiAddr = initAi("/home/garbest.rknn");
+    public void init(String modelPath) {
+        aiAddr = initAi(modelPath);
     }
 
     public DetectionResultGroup detectAndDisplay(long frameAddr) {

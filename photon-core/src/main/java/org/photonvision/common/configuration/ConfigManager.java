@@ -261,6 +261,17 @@ public class ConfigManager {
         return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
     }
 
+    public boolean saveUploadedRKNNModel(Path uploadPath) {
+        var modelPath = Path.of(configDirectoryFile.toString(), "model.rknn").toFile();
+        try {
+            org.apache.commons.io.FileUtils.copyFile(uploadPath.toFile(), modelPath);
+            return true;
+        } catch (IOException e) {
+            logger.error("Exception copying uploaded RKNN model!", e);
+            return false;
+        }
+    }
+
     public void requestSave() {
         logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();
