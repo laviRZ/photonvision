@@ -231,7 +231,7 @@ public class TrackedTarget implements Releasable {
                         params.cameraCenterPoint.y,
                         box.y + box.height / 2.0,
                         params.verticalFocalLength);
-                        
+
         m_yaw = yawPitch.getFirst();
         m_pitch = yawPitch.getSecond();
         Point[] cornerPoints =
@@ -252,7 +252,6 @@ public class TrackedTarget implements Releasable {
 
         m_fiducialId = class_id;
     }
-
 
     public void setFiducialId(int id) {
         m_fiducialId = id;

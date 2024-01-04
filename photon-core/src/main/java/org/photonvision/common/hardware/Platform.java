@@ -31,10 +31,19 @@ public enum Platform {
     LINUX_32("Linux x86", "linuxx64", false, OSType.LINUX, true),
     LINUX_64("Linux x64", "linuxx64", false, OSType.LINUX, true),
     LINUX_RASPBIAN32(
-            "Linux Raspbian 32-bit", "linuxarm32", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 32-bit image
+            "Linux Raspbian 32-bit",
+            "linuxarm32",
+            true,
+            OSType.LINUX,
+            true), // Raspberry Pi 3/4 with a 32-bit image
     LINUX_RASPBIAN64(
-            "Linux Raspbian 64-bit", "linuxarm64",true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 64-bit image
-    LINUX_AARCH64("Linux AARCH64", "linuxarm64",false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
+            "Linux Raspbian 64-bit",
+            "linuxarm64",
+            true,
+            OSType.LINUX,
+            true), // Raspberry Pi 3/4 with a 64-bit image
+    LINUX_AARCH64(
+            "Linux AARCH64", "linuxarm64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
     LINUX_ARM32("Linux ARM32", "linuxarm32", false, OSType.LINUX, true), // ODROID XU4, C1+
@@ -63,7 +72,12 @@ public enum Platform {
     private static final Platform currentPlatform = getCurrentPlatform();
     private static final boolean isRoot = checkForRoot();
 
-    Platform(String description, String nativeLibFolderName, boolean isPi, OSType osType, boolean isSupported) {
+    Platform(
+            String description,
+            String nativeLibFolderName,
+            boolean isPi,
+            OSType osType,
+            boolean isSupported) {
         this.description = description;
         this.isPi = isPi;
         this.osType = osType;
