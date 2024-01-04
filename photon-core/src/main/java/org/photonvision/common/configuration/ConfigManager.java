@@ -217,6 +217,10 @@ public class ConfigManager {
         return Path.of(configDirectoryFile.toString(), "calibImgs");
     }
 
+    public Path getRKNNModelPath() {
+        return Path.of(configDirectoryFile.toString(), "model.rknn");
+    }
+
     public static final String LOG_PREFIX = "photonvision-";
     public static final String LOG_EXT = ".log";
     public static final String LOG_DATE_TIME_FORMAT = "yyyy-M-d_hh-mm-ss";
@@ -262,7 +266,7 @@ public class ConfigManager {
     }
 
     public boolean saveUploadedRKNNModel(Path uploadPath) {
-        var modelPath = Path.of(configDirectoryFile.toString(), "model.rknn").toFile();
+        var modelPath = getRKNNModelPath().toFile();
         try {
             org.apache.commons.io.FileUtils.copyFile(uploadPath.toFile(), modelPath);
             return true;

@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.*;
@@ -30,6 +31,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.rknn.RKNNJNI;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
+import org.photonvision.common.configuration.ConfigManager;
 
 public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSettings> {
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
@@ -51,7 +53,7 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         this.settings = settings;
 
         this.rknnjni = new RKNNJNI();
-        this.rknnjni.init(PathManager.getInstance().getRootFolder() + "/model.rknn");
+        this.rknnjni.init(ConfigManager.getInstance().getRKNNModelPath().toString());
     }
 
     @Override
