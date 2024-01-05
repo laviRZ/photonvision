@@ -88,8 +88,11 @@ public abstract class PhotonJniCommon {
             var nativeLibName = System.mapLibraryName(libraryName);
             // check if already at /usr/lib
             if (new File("/usr/lib", nativeLibName).exists()) {
-                System.out.println("Already loaded library " + arch_name + "/" + nativeLibName);
-                return;
+                // try to delete
+                if (!new File("/usr/lib", nativeLibName).delete()) {
+                    System.out.println("Couldn't delete library " + arch_name + "/" + nativeLibName);
+                    return;
+                }
             }
             var in =
                     PhotonJniCommon.class.getResourceAsStream(
