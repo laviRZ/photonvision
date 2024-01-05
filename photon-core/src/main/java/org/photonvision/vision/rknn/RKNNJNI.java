@@ -1,5 +1,6 @@
 package org.photonvision.vision.rknn;
 
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.jni.PhotonJniCommon;
 
 public class RKNNJNI extends PhotonJniCommon {
@@ -67,8 +68,7 @@ public class RKNNJNI extends PhotonJniCommon {
     private long aiAddr;
 
     public RKNNJNI() {
-        if(!Platform.isWindows())
-            forceLoad(RKNNJNI.class, "rknnrt");
+        if (!Platform.isWindows()) forceLoad(RKNNJNI.class, "rknnrt");
         forceLoad(RKNNJNI.class, "jnish");
     }
 
