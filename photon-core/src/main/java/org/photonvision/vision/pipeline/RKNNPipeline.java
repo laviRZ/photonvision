@@ -17,12 +17,11 @@
 
 package org.photonvision.vision.pipeline;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.common.configuration.PathManager;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -31,7 +30,6 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.rknn.RKNNJNI;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
-import org.photonvision.common.configuration.ConfigManager;
 
 public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSettings> {
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();

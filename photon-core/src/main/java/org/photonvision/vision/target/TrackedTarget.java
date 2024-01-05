@@ -251,6 +251,7 @@ public class TrackedTarget implements Releasable {
         m_area = m_mainContour.getArea() / params.imageArea * 100;
 
         m_fiducialId = class_id;
+        m_poseAmbiguity = confidence;
     }
 
     public void setFiducialId(int id) {
