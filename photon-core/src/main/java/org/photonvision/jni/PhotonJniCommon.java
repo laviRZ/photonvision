@@ -78,6 +78,61 @@ public abstract class PhotonJniCommon {
         forceLoad(clazz, List.of(libraryName));
     }
 
+    protected static synchronized void unpack(String libraryName) {
+        if (libraryLoaded) return;
+        if (logger == null) logger = new Logger(PhotonJniCommon.class, LogGroup.Camera);
+
+        try {
+            // We always extract the shared object (we could hash each so, but that's a lot of work)
+            System.out.println("Loading library " + libraryName);
+            var arch_name = Platform.getNativeLibraryFolderName();
+            var nativeLibName = System.mapLibraryName(libraryName);
+            var in =
+                    PhotonJniCommon.class.getResourceAsStream(
+                            "/nativelibraries/" + arch_name + "/" + nativeLibName);
+            System.out.println("Loading library " + arch_name + "/" + nativeLibName);
+
+            if (in == null) {
+                libraryLoaded = false;
+                System.out.println("Couldn't find library " + arch_name + "/" + nativeLibName);
+                return;
+            }
+
+            // It's important that we don't mangle the names of these files on Windows at least
+            File temp = new File(System.getProperty("java.io.tmpdir"), nativeLibName);
+            FileOutputStream fos = new FileOutputStream(temp);
+
+            int read = -1;
+            byte[] buffer = new byte[1024];
+            while ((read = in.read(buffer)) != -1) {
+                fos.write(buffer, 0, read);
+            }
+            fos.close();
+            in.close();
+            System.out.println("Loaded library " + temp.getAbsolutePath());
+            if (Platform.isLinux()) {
+                // copy to /usr/lib
+                File lib = new File("/usr/lib", nativeLibName);
+                fos = new FileOutputStream(lib);
+                in =
+                        PhotonJniCommon.class.getResourceAsStream(
+                                "/nativelibraries/" + arch_name + "/" + nativeLibName);
+                while ((read = in.read(buffer)) != -1) {
+                    fos.write(buffer, 0, read);
+                }
+                fos.close();
+                in.close();
+                System.out.println("Loaded library " + lib.getAbsolutePath());
+            }
+
+        } catch (Exception e) {
+            logger.error("Couldn't load shared object " + libraryName, e);
+            e.printStackTrace();
+            // logger.error(System.getProperty("java.library.path"));
+        }
+        libraryLoaded = true;
+    }
+
     public static boolean isWorking() {
         return libraryLoaded;
     }
