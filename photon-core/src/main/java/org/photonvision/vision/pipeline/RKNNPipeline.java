@@ -60,55 +60,56 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
     @Override
     protected CVPipelineResult process(Frame input_frame, RKNNPipelineSettings settings) {
         long sumPipeNanosElapsed = System.nanoTime();
+        times.clear();
+        times.add(System.nanoTime());
         if (input_frame.colorImage.getMat().empty()) {
             System.out.println("frame is empty");
             return new CVPipelineResult(0, 0, List.of(), input_frame);
         }
         times.add(System.nanoTime());
         targetList.clear();
-        times.clear();
         times.add(System.nanoTime());
 
         input_frame.processedImage.copyTo(input_frame.colorImage);
         times.add(System.nanoTime());
         processed = input_frame.processedImage.getMat();
-        times.add(System.nanoTime());
 
         times.add(System.nanoTime());
-        var results = rknnjni.detectAndDisplay(processed.getNativeObjAddr());
+        var results = rknnjni.detectAndDisplay(input_frame.colorImage.getMat().getNativeObjAddr());
         times.add(System.nanoTime());
         for (int i = 0; results != null && i < results.count; i++) {
             var detection = results.results[i];
             if (detection.conf < settings.confidenceThreshold) continue;
 
             var box = detection.box;
-
-            Imgproc.rectangle(
-                    processed,
-                    new Point(box.left, box.top),
-                    new Point(box.right, box.bottom),
-                    new Scalar(0, 0, 255),
-                    2);
-
-            var name = String.format("%s (%f)", Short.toString(detection.cls), detection.conf);
-
-            Imgproc.putText(
-                    processed,
-                    name,
-                    new Point(box.left, box.top + 12),
-                    0,
-                    0.6,
-                    ColorHelper.colorToScalar(java.awt.Color.white),
-                    2);
             var target =
-                    new TrackedTarget(
-                            new Rect2d(box.left, box.top, box.right - box.left, box.bottom - box.top),
-                            detection.cls,
-                            detection.conf,
-                            new TargetCalculationParameters(
-                                    false, null, null, null, null, this.frameStaticProperties));
+                    targetList.add(
+                            new TrackedTarget(
+                                    new Rect2d(box.left, box.top, box.right - box.left, box.bottom - box.top),
+                                    detection.cls,
+                                    detection.conf,
+                                    new TargetCalculationParameters(
+                                            false, null, null, null, null, this.frameStaticProperties)));
+            if (settings.outputShouldShow) {
 
-            targetList.add(target);
+                Imgproc.rectangle(
+                        processed,
+                        new Point(box.left, box.top),
+                        new Point(box.right, box.bottom),
+                        new Scalar(0, 0, 255),
+                        2);
+
+                var name = String.format("%s (%f)", Short.toString(detection.cls), detection.conf);
+
+                Imgproc.putText(
+                        processed,
+                        name,
+                        new Point(box.left, box.top + 12),
+                        0,
+                        0.6,
+                        ColorHelper.colorToScalar(java.awt.Color.white),
+                        2);
+            }
         }
         times.add(System.nanoTime());
 
@@ -132,9 +133,18 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
             Imgproc.resize(processed, processed, size);
             Imgproc.resize(input_frame.colorImage.getMat(), input_frame.colorImage.getMat(), size);
         }
+        times.add(System.nanoTime());
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
+
+        // print times
+        for (int i = 0; i < times.size() - 1; i++) {
+            // System.out.print((times.get(i + 1) - times.get(i)) / 1000000.0 + " ");
+        }
+        // System.out.print((System.nanoTime() - sumPipeNanosElapsed) / 1000000.0 + " ");
+        // System.out.println((times.get(times.size() - 1) - times.get(0)) / 1000000.0);
+
         return new CVPipelineResult(
                 System.nanoTime() - sumPipeNanosElapsed, fps, targetList, input_frame);
     }
