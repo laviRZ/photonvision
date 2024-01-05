@@ -103,7 +103,7 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
             var target =
                     new TrackedTarget(
                             new Rect2d(box.left, box.top, box.right - box.left, box.bottom - box.top),
-                            0,
+                            detection.cls,
                             detection.conf,
                             new TargetCalculationParameters(
                                     false, null, null, null, null, this.frameStaticProperties));
