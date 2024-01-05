@@ -79,6 +79,8 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         times.add(System.nanoTime());
         for (int i = 0; results != null && i < results.count; i++) {
             var detection = results.results[i];
+            if (detection.conf < settings.confidenceThreshold) continue;
+
             var box = detection.box;
 
             Imgproc.rectangle(

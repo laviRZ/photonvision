@@ -12,6 +12,7 @@ import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
+import RKNNTab from "@/components/dashboard/tabs/RKNNTab.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 interface ConfigOption {
@@ -55,6 +56,10 @@ const allTabs = Object.freeze({
   map3dTab: {
     tabName: "3D",
     component: Map3DTab
+  },
+  rknnTab: {
+    tabName: "RKNN",
+    component: RKNNTab
   }
 });
 
@@ -75,6 +80,7 @@ const getTabGroups = (): ConfigOption[][] => {
         allTabs.contoursTab,
         allTabs.apriltagTab,
         allTabs.arucoTab,
+        allTabs.rknnTab,
         allTabs.outputTab
       ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
@@ -82,14 +88,14 @@ const getTabGroups = (): ConfigOption[][] => {
   } else if (lgAndDown) {
     return [
       [allTabs.inputTab],
-      [allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.outputTab],
+      [allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.rknnTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   } else if (xl) {
     return [
       [allTabs.inputTab],
       [allTabs.thresholdTab],
-      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.outputTab],
+      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.rknnTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   }
@@ -103,6 +109,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
   const allow3d = useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled;
   const isAprilTag = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.AprilTag;
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
+  const isRKNN = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.RKNN;
 
   return getTabGroups()
     .map((tabGroup) =>
@@ -110,10 +117,11 @@ const tabGroups = computed<ConfigOption[][]>(() => {
         (tabConfig) =>
           !(!allow3d && tabConfig.tabName === "3D") && //Filter out 3D tab any time 3D isn't calibrated
           !((!allow3d || isAprilTag || isAruco) && tabConfig.tabName === "PnP") && //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
-          !((isAprilTag || isAruco) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
-          !((isAprilTag || isAruco) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
+          !((isAprilTag || isAruco || isRKNN) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags or RKNN
+          !((isAprilTag || isAruco || isRKNN) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags or RKNN
           !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
-          !(!isAruco && tabConfig.tabName === "Aruco") //Filter out aruco unless we actually are doing Aruco
+          !(!isAruco && tabConfig.tabName === "Aruco") && //Filter out aruco unless we actually are doing Aruco
+          !(!isRKNN && tabConfig.tabName === "RKNN") //Filter out aruco unless we actually are doing Aruco
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
