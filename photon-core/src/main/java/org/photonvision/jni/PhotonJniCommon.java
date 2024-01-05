@@ -86,6 +86,11 @@ public abstract class PhotonJniCommon {
             System.out.println("Loading library " + libraryName);
             var arch_name = Platform.getNativeLibraryFolderName();
             var nativeLibName = System.mapLibraryName(libraryName);
+            // check if already at /usr/lib
+            if (new File("/usr/lib", nativeLibName).exists()) {
+                System.out.println("Already loaded library " + arch_name + "/" + nativeLibName);
+                return;
+            }
             var in =
                     PhotonJniCommon.class.getResourceAsStream(
                             "/nativelibraries/" + arch_name + "/" + nativeLibName);
