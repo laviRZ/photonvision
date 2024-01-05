@@ -79,7 +79,6 @@ public abstract class PhotonJniCommon {
     }
 
     protected static synchronized void unpack(String libraryName) {
-        if (libraryLoaded) return;
         if (logger == null) logger = new Logger(PhotonJniCommon.class, LogGroup.Camera);
 
         try {
@@ -130,7 +129,6 @@ public abstract class PhotonJniCommon {
             e.printStackTrace();
             // logger.error(System.getProperty("java.library.path"));
         }
-        libraryLoaded = true;
     }
 
     public static boolean isWorking() {
