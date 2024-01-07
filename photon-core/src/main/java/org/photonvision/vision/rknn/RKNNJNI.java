@@ -1,5 +1,7 @@
 package org.photonvision.vision.rknn;
 
+import java.io.File;
+
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.jni.PhotonJniCommon;
 
@@ -69,7 +71,7 @@ public class RKNNJNI extends PhotonJniCommon {
 
     public RKNNJNI() {
         if(isWorking()) return;
-        if (!Platform.isWindows()) unpack(RKNNJNI.class, "rknnrt", "/usr/lib");
+        if (!Platform.isWindows() && !(new File("/usr/lib/librknnrt.so").exists())) unpack(RKNNJNI.class, "rknnrt", "/usr/lib");
         forceLoad(RKNNJNI.class, "jnish");
     }
 
