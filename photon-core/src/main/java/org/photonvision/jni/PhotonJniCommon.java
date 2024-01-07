@@ -56,7 +56,7 @@ public abstract class PhotonJniCommon {
         forceLoad(clazz, List.of(libraryName));
     }
 
-    protected static synchronized String unpack(Class<?> clazz, String libraryName) {
+    protected static synchronized String unpack(Class<?> clazz, String libraryName, String unpackTo) {
         System.out.println("Loading library " + libraryName);
         var arch_name = Platform.getNativeLibraryFolderName();
         var nativeLibName = System.mapLibraryName(libraryName);
@@ -70,7 +70,8 @@ public abstract class PhotonJniCommon {
         String res = null;
         try {
             // It's important that we don't mangle the names of these files on Windows at least
-            File temp = new File(System.getProperty("user.home") + "/photonbins", nativeLibName);
+            File temp = new File(unpackTo, nativeLibName);
+            if (temp.exists()) temp.delete();
             FileOutputStream fos = new FileOutputStream(temp);
 
             int read = -1;
@@ -85,6 +86,10 @@ public abstract class PhotonJniCommon {
             e.printStackTrace();
         }
         return res;
+    }
+
+    protected static synchronized String unpack(Class<?> clazz, String libraryName) {
+        return unpack(clazz, libraryName, System.getProperty("java.io.tmpdir"));
     }
 
     public static boolean isWorking() {

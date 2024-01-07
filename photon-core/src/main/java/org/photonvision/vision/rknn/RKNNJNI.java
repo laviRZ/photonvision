@@ -68,7 +68,7 @@ public class RKNNJNI extends PhotonJniCommon {
     private long aiAddr;
 
     public RKNNJNI() {
-        if (!Platform.isWindows()) unpack(RKNNJNI.class, "rknnrt");
+        if (!Platform.isWindows()) unpack(RKNNJNI.class, "rknnrt", "/usr/lib");
         forceLoad(RKNNJNI.class, "jnish");
     }
 
