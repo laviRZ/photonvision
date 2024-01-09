@@ -19,6 +19,7 @@ package org.photonvision.jni;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.photonvision.common.hardware.Platform;
@@ -28,13 +29,13 @@ import org.photonvision.common.logging.Logger;
 public abstract class PhotonJniCommon {
     protected static Logger logger = null;
 
-    protected abstract Set<String> getLoadedLibraries();
+    protected static Set<String> loadedLibraries = new HashSet<>();
 
     protected static synchronized void forceLoad(Class<?> clazz, List<String> libraries) {
         if (logger == null) logger = new Logger(clazz, LogGroup.Camera);
 
         for (var libraryName : libraries) {
-            if (loadedLibraries.contains(libraryName)) {
+            if (loadedLibraries.contains(clazz.getName() + ":" + libraryName)) {
                 logger.info("Library " + libraryName + " already loaded");
                 continue;
             }
@@ -42,7 +43,7 @@ public abstract class PhotonJniCommon {
                 // We always extract the shared object (we could hash each so, but that's a lot of work)
                 var lib = unpack(clazz, libraryName);
                 System.load(lib);
-                loadedLibraries.add(libraryName);
+                loadedLibraries.add(clazz.getName() + ":" + libraryName);
             } catch (Exception e) {
                 logger.error("Couldn't load shared object " + libraryName, e);
                 e.printStackTrace();
@@ -91,7 +92,14 @@ public abstract class PhotonJniCommon {
         return unpack(clazz, libraryName, System.getProperty("java.io.tmpdir"));
     }
 
-    public static boolean isWorking() {
-        return !loadedLibraries.isEmpty();
+    public boolean isWorking() {
+        boolean working = false;
+        for (var lib : loadedLibraries) {
+            if (lib.contains(this.getClass().getName())) {
+                working = true;
+                break;
+            }
+        }
+        return working;
     }
 }

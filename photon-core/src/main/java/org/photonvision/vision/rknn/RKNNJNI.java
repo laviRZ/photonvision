@@ -1,6 +1,9 @@
 package org.photonvision.vision.rknn;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.jni.PhotonJniCommon;
 
@@ -68,18 +71,11 @@ public class RKNNJNI extends PhotonJniCommon {
 
     private long aiAddr;
 
-    static Set<String> loadedLibraries = new HashSet<>();
-
     public RKNNJNI() {
         if (isWorking()) return;
         if (!Platform.isWindows() && !(new File("/usr/lib/librknnrt.so").exists()))
             unpack(RKNNJNI.class, "rknnrt", "/usr/lib");
         forceLoad(RKNNJNI.class, "jnish");
-    }
-
-    @Override
-    protected Set<String> getLoadedLibraries() {
-        return loadedLibraries;
     }
 
     public void init(String modelPath) {
