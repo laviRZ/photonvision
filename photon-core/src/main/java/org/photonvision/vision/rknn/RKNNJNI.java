@@ -64,10 +64,12 @@ public class RKNNJNI extends PhotonJniCommon {
     }
 
     private static native DetectionResultGroup detectAndDisplay(long aiAddr, long frameAddr);
-
     private static native long initAi(String modelPath);
 
     private long aiAddr;
+
+    static Set<String> loadedLibraries = new HashSet<>();
+
 
     public RKNNJNI() {
         if(isWorking()) return;
@@ -75,12 +77,17 @@ public class RKNNJNI extends PhotonJniCommon {
         forceLoad(RKNNJNI.class, "jnish");
     }
 
+    @Override
+    protected Set<String> getLoadedLibraries() {
+        return loadedLibraries;
+    }
+
     public void init(String modelPath) {
         aiAddr = initAi(modelPath);
     }
 
     public DetectionResultGroup detectAndDisplay(long frameAddr) {
-        if (aiAddr == 0) {
+        if (aiAddr < 0) {
             return null;
         }
         // var timeBefore = System.nanoTime();

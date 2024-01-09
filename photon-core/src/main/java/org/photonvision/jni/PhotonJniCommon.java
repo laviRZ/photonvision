@@ -27,22 +27,21 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public abstract class PhotonJniCommon {
-    static Set<String> loadedLibraries = new HashSet<>();
     protected static Logger logger = null;
 
+    protected abstract Set<String> getLoadedLibraries();
     protected static synchronized void forceLoad(Class<?> clazz, List<String> libraries) {
         if (logger == null) logger = new Logger(clazz, LogGroup.Camera);
 
         for (var libraryName : libraries) {
-            if (loadedLibraries.contains(libraryName)) continue;
+            if (loadedLibraries.contains(libraryName)){
+                logger.info("Library " + libraryName + " already loaded");
+                continue;
+            }
             try {
                 // We always extract the shared object (we could hash each so, but that's a lot of work)
                 var lib = unpack(clazz, libraryName);
-                System.out.println("Loaded library " + lib);
-
                 System.load(lib);
-
-                logger.info("Successfully loaded shared object " + libraryName);
                 loadedLibraries.add(libraryName);
             } catch (Exception e) {
                 logger.error("Couldn't load shared object " + libraryName, e);
@@ -57,11 +56,10 @@ public abstract class PhotonJniCommon {
     }
 
     protected static synchronized String unpack(Class<?> clazz, String libraryName, String unpackTo) {
-        System.out.println("Loading library " + libraryName);
+        System.out.println("Unpacking library " + libraryName);
         var arch_name = Platform.getNativeLibraryFolderName();
         var nativeLibName = System.mapLibraryName(libraryName);
         var in = clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/" + nativeLibName);
-        System.out.println("Loading library " + arch_name + "/" + nativeLibName);
 
         if (in == null) {
             System.out.println("Couldn't find library " + arch_name + "/" + nativeLibName);
@@ -85,6 +83,7 @@ public abstract class PhotonJniCommon {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Unpacked library " + libraryName + " to " + res);
         return res;
     }
 

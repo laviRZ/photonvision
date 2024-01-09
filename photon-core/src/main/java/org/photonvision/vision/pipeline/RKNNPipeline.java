@@ -37,7 +37,6 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
     List<TrackedTarget> targetList = new ArrayList<TrackedTarget>();
     List<Long> times = new ArrayList<>();
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
-    private double lastTime = 0;
 
     public RKNNPipeline() {
         super(PROCESSING_TYPE);
@@ -48,8 +47,8 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
 
     public RKNNPipeline(RKNNPipelineSettings settings) {
         super(PROCESSING_TYPE);
-        this.settings = settings;
-
+        this.settings = settings;        
+        
         this.rknnjni = new RKNNJNI();
         this.rknnjni.init(ConfigManager.getInstance().getRKNNModelPath().toString());
     }
