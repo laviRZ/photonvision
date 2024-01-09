@@ -2,9 +2,9 @@ package org.photonvision.vision.rknn;
 
 import java.io.File;
 import org.photonvision.common.hardware.Platform;
-import org.photonvision.jni.PhotonJniCommon;
+import org.photonvision.jni.PhotonJNICommon;
 
-public class RKNNJNI extends PhotonJniCommon {
+public class RKNNJNI extends PhotonJNICommon {
     public static class BoxRect {
         public int left;
         public int right;
@@ -89,5 +89,9 @@ public class RKNNJNI extends PhotonJniCommon {
         // var timeElapsed = timeAfter - timeBefore;
         // System.out.println("JNI: " + String.format("%.2f", timeElapsed / 1000000.0) + "ms");
         return res;
+    }
+
+    public static boolean isWorking() {
+        return isWorking(RKNNJNI.class);
     }
 }

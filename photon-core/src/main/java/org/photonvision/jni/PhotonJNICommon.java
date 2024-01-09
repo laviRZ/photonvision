@@ -26,7 +26,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
-public abstract class PhotonJniCommon {
+public abstract class PhotonJNICommon {
     protected static Logger logger = null;
 
     protected static Set<String> loadedLibraries = new HashSet<>();
@@ -92,10 +92,10 @@ public abstract class PhotonJniCommon {
         return unpack(clazz, libraryName, System.getProperty("java.io.tmpdir"));
     }
 
-    public boolean isWorking() {
+    public static boolean isWorking(Class<? extends PhotonJNICommon> clazz) {
         boolean working = false;
         for (var lib : loadedLibraries) {
-            if (lib.contains(this.getClass().getName())) {
+            if (lib.contains(clazz.getName())) {
                 working = true;
                 break;
             }
