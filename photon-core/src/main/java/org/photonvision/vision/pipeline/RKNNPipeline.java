@@ -47,8 +47,8 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
 
     public RKNNPipeline(RKNNPipelineSettings settings) {
         super(PROCESSING_TYPE);
-        this.settings = settings;        
-        
+        this.settings = settings;
+
         this.rknnjni = new RKNNJNI();
         this.rknnjni.init(ConfigManager.getInstance().getRKNNModelPath().toString());
     }

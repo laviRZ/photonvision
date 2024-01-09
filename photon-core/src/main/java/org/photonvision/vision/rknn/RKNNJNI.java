@@ -1,7 +1,6 @@
 package org.photonvision.vision.rknn;
 
 import java.io.File;
-
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.jni.PhotonJniCommon;
 
@@ -64,16 +63,17 @@ public class RKNNJNI extends PhotonJniCommon {
     }
 
     private static native DetectionResultGroup detectAndDisplay(long aiAddr, long frameAddr);
+
     private static native long initAi(String modelPath);
 
     private long aiAddr;
 
     static Set<String> loadedLibraries = new HashSet<>();
 
-
     public RKNNJNI() {
-        if(isWorking()) return;
-        if (!Platform.isWindows() && !(new File("/usr/lib/librknnrt.so").exists())) unpack(RKNNJNI.class, "rknnrt", "/usr/lib");
+        if (isWorking()) return;
+        if (!Platform.isWindows() && !(new File("/usr/lib/librknnrt.so").exists()))
+            unpack(RKNNJNI.class, "rknnrt", "/usr/lib");
         forceLoad(RKNNJNI.class, "jnish");
     }
 

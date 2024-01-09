@@ -19,7 +19,6 @@ package org.photonvision.jni;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.photonvision.common.hardware.Platform;
@@ -30,11 +29,12 @@ public abstract class PhotonJniCommon {
     protected static Logger logger = null;
 
     protected abstract Set<String> getLoadedLibraries();
+
     protected static synchronized void forceLoad(Class<?> clazz, List<String> libraries) {
         if (logger == null) logger = new Logger(clazz, LogGroup.Camera);
 
         for (var libraryName : libraries) {
-            if (loadedLibraries.contains(libraryName)){
+            if (loadedLibraries.contains(libraryName)) {
                 logger.info("Library " + libraryName + " already loaded");
                 continue;
             }
