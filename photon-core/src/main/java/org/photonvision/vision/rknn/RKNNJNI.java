@@ -1,9 +1,6 @@
 package org.photonvision.vision.rknn;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.jni.PhotonJniCommon;
 
