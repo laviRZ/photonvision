@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { CalibrationBoardTypes, type Resolution, type VideoFormat } from "@/types/SettingTypes";
+import { CalibrationBoardTypes, type VideoFormat } from "@/types/SettingTypes";
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -12,37 +12,41 @@ import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
+import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const settingsValid = ref(true);
 
-const getCalibrationCoeffs = (resolution: Resolution) => {
-  return useCameraSettingsStore().currentCameraSettings.completeCalibrations.find((cal) =>
-    resolutionsAreEqual(cal.resolution, resolution)
-  );
-};
-const getUniqueVideoResolutions = (): VideoFormat[] => {
+const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format, index) => {
     if (!uniqueResolutions.some((v) => resolutionsAreEqual(v.resolution, format.resolution))) {
       format.index = index;
 
-      const calib = getCalibrationCoeffs(format.resolution);
+      const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
-        format.standardDeviation = calib.standardDeviation;
-        format.mean =
-          calib.perViewErrors === null
-            ? Number.NaN
-            : calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
-        format.horizontalFOV = 2 * Math.atan2(format.resolution.width / 2, calib.intrinsics[0]) * (180 / Math.PI);
-        format.verticalFOV = 2 * Math.atan2(format.resolution.height / 2, calib.intrinsics[4]) * (180 / Math.PI);
+        // Is this the right formula for RMS error? who knows! not me!
+        const perViewSumSquareReprojectionError = calib.observations.flatMap((it) =>
+          it.reprojectionErrors.flatMap((it2) => [it2.x, it2.y])
+        );
+        // For each error, square it, sum the squares, and divide by total points N
+        format.mean = Math.sqrt(
+          perViewSumSquareReprojectionError.map((it) => Math.pow(it, 2)).reduce((a, b) => a + b, 0) /
+            perViewSumSquareReprojectionError.length
+        );
+
+        format.horizontalFOV =
+          2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
+        format.verticalFOV =
+          2 * Math.atan2(format.resolution.height / 2, calib.cameraIntrinsics.data[4]) * (180 / Math.PI);
         format.diagonalFOV =
           2 *
           Math.atan2(
             Math.sqrt(
               format.resolution.width ** 2 +
-                (format.resolution.height / (calib.intrinsics[4] / calib.intrinsics[0])) ** 2
+                (format.resolution.height / (calib.cameraIntrinsics.data[4] / calib.cameraIntrinsics.data[0])) ** 2
             ) / 2,
-            calib.intrinsics[0]
+            calib.cameraIntrinsics.data[0]
           ) *
           (180 / Math.PI);
       }
@@ -55,7 +59,7 @@ const getUniqueVideoResolutions = (): VideoFormat[] => {
   return uniqueResolutions;
 };
 const getUniqueVideoResolutionStrings = (): { name: string; value: number }[] =>
-  getUniqueVideoResolutions().map<{ name: string; value: number }>((f) => ({
+  getUniqueVideoFormatsByResolution().map<{ name: string; value: number }>((f) => ({
     name: `${getResolutionString(f.resolution)}`,
     // Index won't ever be undefined
     value: f.index || 0
@@ -71,6 +75,15 @@ const squareSizeIn = ref(1);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Chessboard);
+const useMrCalRef = ref(true);
+const useMrCal = computed<boolean>({
+  get() {
+    return useMrCalRef.value && useSettingsStore().general.mrCalWorking;
+  },
+  set(value) {
+    useMrCalRef.value = value && useSettingsStore().general.mrCalWorking;
+  }
+});
 
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
@@ -150,7 +163,7 @@ const importCalibrationFromCalibDB = ref();
 const openCalibUploadPrompt = () => {
   importCalibrationFromCalibDB.value.click();
 };
-const readImportedCalibration = () => {
+const readImportedCalibrationFromCalibDB = () => {
   const files = importCalibrationFromCalibDB.value.files;
   if (files.length === 0) return;
 
@@ -185,7 +198,8 @@ const startCalibration = () => {
     squareSizeIn: squareSizeIn.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
-    boardType: boardType.value
+    boardType: boardType.value,
+    useMrCal: useMrCal.value
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
@@ -214,6 +228,13 @@ const endCalibration = () => {
       isCalibrating.value = false;
     });
 };
+
+let showCalDialog = ref(false);
+let selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
+const setSelectedVideoFormat = (format: VideoFormat) => {
+  selectedVideoFormat.value = format;
+  showCalDialog.value = true;
+};
 </script>
 
 <template>
@@ -234,7 +255,12 @@ const endCalibration = () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(value, index) in getUniqueVideoResolutions()" :key="index">
+              <tr
+                v-for="(value, index) in getUniqueVideoFormatsByResolution()"
+                :key="index"
+                title="Click to get calibration specific information"
+                @click="setSelectedVideoFormat(value)"
+              >
                 <td>{{ getResolutionString(value.resolution) }}</td>
                 <td>
                   {{ value.mean !== undefined ? (isNaN(value.mean) ? "NaN" : value.mean.toFixed(2) + "px") : "-" }}
@@ -299,6 +325,23 @@ const endCalibration = () => {
               :rules="[(v) => v >= 4 || 'Height must be at least 4']"
               :label-cols="5"
             />
+            <pv-switch
+              v-model="useMrCal"
+              label="Try using MrCal over OpenCV"
+              :disabled="!useSettingsStore().general.mrCalWorking || isCalibrating"
+              tooltip="If enabled, Photon will (try to) use MrCal instead of OpenCV for camera calibration."
+              :label-cols="5"
+            />
+            <v-banner
+              v-show="!useSettingsStore().general.mrCalWorking"
+              rounded
+              color="red"
+              text-color="white"
+              class="mt-3"
+              icon="mdi-alert-circle-outline"
+            >
+              MrCal JNI could not be loaded! Consult journalctl logs for additional details.
+            </v-banner>
           </v-form>
           <v-row justify="center">
             <v-chip
@@ -429,7 +472,7 @@ const endCalibration = () => {
               type="file"
               accept=".json"
               style="display: none"
-              @change="readImportedCalibration"
+              @change="readImportedCalibrationFromCalibDB"
             />
           </v-col>
         </v-row>
@@ -478,6 +521,9 @@ const endCalibration = () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="showCalDialog" width="80em">
+      <CameraCalibrationInfoCard v-if="selectedVideoFormat" :video-format="selectedVideoFormat" />
+    </v-dialog>
   </div>
 </template>
 
@@ -494,6 +540,7 @@ const endCalibration = () => {
 
   tbody :hover td {
     background-color: #005281 !important;
+    cursor: pointer;
   }
 
   ::-webkit-scrollbar {

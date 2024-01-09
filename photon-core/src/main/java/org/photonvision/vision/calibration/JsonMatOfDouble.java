@@ -29,7 +29,8 @@ import org.opencv.core.MatOfDouble;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.opencv.Releasable;
 
-public class JsonMat implements Releasable {
+/** JSON-serializable image. Data is stored as a raw JSON array. */
+public class JsonMatOfDouble implements Releasable {
     public final int rows;
     public final int cols;
     public final int type;
@@ -41,11 +42,11 @@ public class JsonMat implements Releasable {
 
     private MatOfDouble wrappedMatOfDouble;
 
-    public JsonMat(int rows, int cols, double[] data) {
+    public JsonMatOfDouble(int rows, int cols, double[] data) {
         this(rows, cols, CvType.CV_64FC1, data);
     }
 
-    public JsonMat(
+    public JsonMatOfDouble(
             @JsonProperty("rows") int rows,
             @JsonProperty("cols") int cols,
             @JsonProperty("type") int type,
@@ -84,9 +85,9 @@ public class JsonMat implements Releasable {
         return Arrays.copyOfRange(data, 0, dataLen);
     }
 
-    public static JsonMat fromMat(Mat mat) {
+    public static JsonMatOfDouble fromMat(Mat mat) {
         if (!isCalibrationMat(mat)) return null;
-        return new JsonMat(mat.rows(), mat.cols(), getDataFromMat(mat));
+        return new JsonMatOfDouble(mat.rows(), mat.cols(), getDataFromMat(mat));
     }
 
     @JsonIgnore
@@ -125,5 +126,24 @@ public class JsonMat implements Releasable {
     public Packet populatePacket(Packet packet) {
         packet.encode(this.data);
         return packet;
+    }
+
+    @Override
+    public String toString() {
+        return "JsonMat [rows="
+                + rows
+                + ", cols="
+                + cols
+                + ", type="
+                + type
+                + ", data="
+                + Arrays.toString(data)
+                + ", wrappedMat="
+                + wrappedMat
+                + ", wpilibMat="
+                + wpilibMat
+                + ", wrappedMatOfDouble="
+                + wrappedMatOfDouble
+                + "]";
     }
 }

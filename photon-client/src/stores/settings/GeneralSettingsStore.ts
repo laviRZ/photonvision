@@ -26,7 +26,8 @@ export const useSettingsStore = defineStore("settings", {
       version: undefined,
       gpuAcceleration: undefined,
       hardwareModel: undefined,
-      hardwarePlatform: undefined
+      hardwarePlatform: undefined,
+      mrCalWorking: true
     },
     network: {
       ntServerAddress: "",
@@ -97,25 +98,14 @@ export const useSettingsStore = defineStore("settings", {
         version: data.general.version || undefined,
         hardwareModel: data.general.hardwareModel || undefined,
         hardwarePlatform: data.general.hardwarePlatform || undefined,
-        gpuAcceleration: data.general.gpuAcceleration || undefined
+        gpuAcceleration: data.general.gpuAcceleration || undefined,
+        mrCalWorking: data.general.mrCalWorking
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;
       this.currentFieldLayout = data.atfl;
     },
-    saveGeneralSettings() {
-      const payload: Required<ConfigurableNetworkSettings> = {
-        connectionType: this.network.connectionType,
-        hostname: this.network.hostname,
-        networkManagerIface: this.network.networkManagerIface || "",
-        ntServerAddress: this.network.ntServerAddress,
-        runNTServer: this.network.runNTServer,
-        setDHCPcommand: this.network.setDHCPcommand || "",
-        setStaticCommand: this.network.setStaticCommand || "",
-        shouldManage: this.network.shouldManage,
-        shouldPublishProto: this.network.shouldPublishProto,
-        staticIp: this.network.staticIp
-      };
+    updateGeneralSettings(payload: Required<ConfigurableNetworkSettings>) {
       return axios.post("/settings/general", payload);
     },
     /**

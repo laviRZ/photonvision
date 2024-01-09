@@ -17,6 +17,7 @@
 
 package org.photonvision.common.hardware;
 
+import com.jogamp.common.os.Platform.OSType;
 import edu.wpi.first.util.RuntimeDetector;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -105,7 +106,7 @@ public enum Platform {
         }
     }
 
-    public static final String getNativeLibraryFolderName() {
+    public static String getNativeLibraryFolderName() {
         return currentPlatform.nativeLibraryFolderName;
     }
 
@@ -186,6 +187,8 @@ public enum Platform {
             } else if (RuntimeDetector.isArm64()) {
                 // TODO - os detection needed?
                 return LINUX_AARCH64;
+            } else if (RuntimeDetector.isArm32()) {
+                return LINUX_ARM32;
             } else {
                 // Unknown or otherwise unsupported platform
                 return Platform.UNKNOWN;
