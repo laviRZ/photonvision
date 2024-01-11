@@ -285,6 +285,7 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
 export interface RKNNPipelineSettings extends PipelineSettings {
   pipelineType: PipelineType.RKNN;
   confidenceThreshold: number;
+  selectedModel: string;
 }
 
 export type ConfigurableRKNNPipelineSettings = Partial<Omit<RKNNPipelineSettings, "pipelineType">> &
@@ -297,7 +298,8 @@ export const DefaultRKNNPipelineSettings: RKNNPipelineSettings = {
   ledMode: false,
   outputShowMultipleTargets: false,
   cameraExposure: 13,
-  confidenceThreshold: 0.35
+  confidenceThreshold: 0.35,
+  selectedModel: "model"
 };
 
 export type ActivePipelineSettings =

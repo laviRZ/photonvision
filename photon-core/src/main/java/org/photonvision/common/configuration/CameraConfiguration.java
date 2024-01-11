@@ -20,9 +20,12 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.zip.ZipInputStream;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -118,6 +121,59 @@ public class CameraConfiguration {
                         + nickname
                         + ") at "
                         + path);
+    }
+
+    static void unpackModelsIfNeeded() {
+        var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
+        if (!modelsPath.toFile().exists()) {
+            System.out.println("Unpacking RKNN models...");
+            var stream = CameraConfiguration.class.getClassLoader().getResourceAsStream("/models.zip");
+            if (stream == null) {
+                logger.error("Failed to find models.zip in jar");
+                return;
+            }
+            try {
+                Files.createDirectories(modelsPath);
+                var zip = new ZipInputStream(stream);
+                var entry = zip.getNextEntry();
+                while (entry != null) {
+                    var filePath = modelsPath.resolve(entry.getName());
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(filePath);
+                    } else {
+                        Files.copy(zip, filePath);
+                    }
+                    entry = zip.getNextEntry();
+                }
+                zip.close();
+            } catch (IOException e) {
+                logger.error("Failed to unpack models.zip");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static String[] getAvailableModels() {
+        unpackModelsIfNeeded();
+        var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
+        var models = modelsPath.toFile().listFiles();
+        String[] res;
+        if (models == null) {
+            res = new String[0];
+        } else {
+            res =
+                    Arrays.stream(models)
+                            .filter(f -> f.getName().endsWith(".rknn"))
+                            .map(f -> f.getName().substring(0, f.getName().length() - 5))
+                            .toArray(String[]::new);
+        }
+
+        if (res.length == 0) {
+            logger.warn("No models found in " + modelsPath);
+        }
+
+        logger.debug("Found models: " + Arrays.toString(res));
+        return res;
     }
 
     public void addPipelineSettings(List<CVPipelineSettings> settings) {

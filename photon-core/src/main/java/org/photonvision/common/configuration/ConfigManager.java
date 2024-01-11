@@ -217,8 +217,8 @@ public class ConfigManager {
         return Path.of(configDirectoryFile.toString(), "calibImgs");
     }
 
-    public Path getRKNNModelPath() {
-        return Path.of(configDirectoryFile.toString(), "model.rknn");
+    public Path getRKNNModelsPath() {
+        return Path.of(configDirectoryFile.toString() + "/models");
     }
 
     public static final String LOG_PREFIX = "photonvision-";
@@ -266,9 +266,9 @@ public class ConfigManager {
     }
 
     public boolean saveUploadedRKNNModel(Path uploadPath) {
-        var modelPath = getRKNNModelPath().toFile();
+        var modelPath = Path.of(getRKNNModelsPath().toString(), uploadPath.getFileName().toString());
         try {
-            org.apache.commons.io.FileUtils.copyFile(uploadPath.toFile(), modelPath);
+            Files.copy(uploadPath, modelPath, StandardCopyOption.REPLACE_EXISTING);
             return true;
         } catch (IOException e) {
             logger.error("Exception copying uploaded RKNN model!", e);

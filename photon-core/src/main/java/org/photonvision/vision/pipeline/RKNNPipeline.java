@@ -18,7 +18,9 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.configuration.ConfigManager;
@@ -38,19 +40,31 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
     List<Long> times = new ArrayList<>();
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
+    private Map<String, RKNNJNI> models = new HashMap<>();
+
     public RKNNPipeline() {
         super(PROCESSING_TYPE);
         settings = new RKNNPipelineSettings();
     }
 
-    private RKNNJNI rknnjni;
-
     public RKNNPipeline(RKNNPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
 
-        this.rknnjni = new RKNNJNI();
-        this.rknnjni.init(ConfigManager.getInstance().getRKNNModelPath().toString());
+        addModel(settings.selectedModel);
+    }
+
+    private void addModel(String name) {
+        var rj = new RKNNJNI();
+        rj.init(ConfigManager.getInstance().getRKNNModelsPath() + "/" + name + ".rknn");
+        models.put(name, rj);
+    }
+
+    private RKNNJNI getModel(String name) {
+        if (!models.containsKey(name)) {
+            addModel(name);
+        }
+        return models.get(name);
     }
 
     @Override
@@ -74,21 +88,22 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         processed = input_frame.processedImage.getMat();
 
         times.add(System.nanoTime());
-        var results = rknnjni.detectAndDisplay(input_frame.colorImage.getMat().getNativeObjAddr());
+        var results =
+                getModel(settings.selectedModel)
+                        .detectAndDisplay(input_frame.colorImage.getMat().getNativeObjAddr());
         times.add(System.nanoTime());
         for (int i = 0; results != null && i < results.count; i++) {
             var detection = results.results[i];
             if (detection.conf < settings.confidenceThreshold) continue;
 
             var box = detection.box;
-            var target =
-                    targetList.add(
-                            new TrackedTarget(
-                                    new Rect2d(box.left, box.top, box.right - box.left, box.bottom - box.top),
-                                    detection.cls,
-                                    detection.conf,
-                                    new TargetCalculationParameters(
-                                            false, null, null, null, null, this.frameStaticProperties)));
+            targetList.add(
+                    new TrackedTarget(
+                            new Rect2d(box.left, box.top, box.right - box.left, box.bottom - box.top),
+                            detection.cls,
+                            detection.conf,
+                            new TargetCalculationParameters(
+                                    false, null, null, null, null, this.frameStaticProperties)));
             if (settings.outputShouldShow) {
 
                 Imgproc.rectangle(
