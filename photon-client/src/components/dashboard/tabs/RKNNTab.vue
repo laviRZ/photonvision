@@ -13,12 +13,6 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
 
-const confidenceThreshold = computed(() => {
-  const cps = currentPipelineSettings.value;
-  return cps.pipelineType === PipelineType.RKNN ? cps.confidenceThreshold : 0.5;
-});
-
-
 const currentSelectedModelIndex = computed(() => {
   const cps = currentPipelineSettings.value;
   return cps.pipelineType === PipelineType.RKNN ?
@@ -44,7 +38,7 @@ const interactiveCols = computed(
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.RKNN">
     <pv-slider
-      :value="confidenceThreshold"
+      v-model="currentPipelineSettings.confidenceThreshold"
       class="pt-2"
       :slider-cols="interactiveCols"
       label="Confidence Threshold"

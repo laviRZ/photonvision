@@ -121,8 +121,8 @@ const tabGroups = computed<ConfigOption[][]>(() => {
           !((isAprilTag || isAruco || isRKNN) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags or RKNN
           !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
           !(!isAruco && tabConfig.tabName === "Aruco") && //Filter out aruco unless we actually are doing Aruco
-          !(!isRKNN && tabConfig.tabName === "RKNN") && //Filter out aruco unless we actually are doing Aruco
-          !(isRKNN && ["Targets", "Output"].includes(tabConfig.tabName)) //Filter out targets tab if we're doing RKNN
+          !(!isRKNN && tabConfig.tabName === "RKNN") && //Filter out RKNN unless we actually are doing RKNN
+          !(isRKNN && tabConfig.tabName === "Output") //Filter out output tab if we're doing RKNN
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
