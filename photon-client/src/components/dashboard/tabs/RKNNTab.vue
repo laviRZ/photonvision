@@ -4,7 +4,7 @@ import PvSlider from "@/components/common/pv-slider.vue";
 import pvSelect from "@/components/common/pv-select.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import type { ActivePipelineSettings, RKNNPipelineSettings } from "@/types/PipelineTypes";
+import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
@@ -22,10 +22,10 @@ const currentSelectedModelIndex = computed(() => {
 const getModelName = (index: number) => {
   const cps = currentPipelineSettings.value;
   return cps.pipelineType === PipelineType.RKNN ?
-  useCameraSettingsStore().availableModels[index] : ""
-}
+  useCameraSettingsStore().availableModels[index] : "";
+};
 
-console.log("available: " + useCameraSettingsStore().availableModels)
+console.log("available: " + useCameraSettingsStore().availableModels);
 const interactiveCols = computed(
   () =>
     (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
