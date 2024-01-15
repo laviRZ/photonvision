@@ -508,7 +508,7 @@ public class VisionModule {
     void unpackModelsIfNeeded() {
         var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
         if (!modelsPath.toFile().exists()) {
-            System.out.println("Unpacking RKNN models...");
+            logger.info("Unpacking RKNN models...");
             var stream = getClass().getResourceAsStream("/models.zip");
             if (stream == null) {
                 logger.error("Failed to find models.zip in jar");

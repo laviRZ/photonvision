@@ -17,13 +17,19 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipInputStream;
+
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -41,6 +47,7 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     private Map<String, RKNNJNI> models = new HashMap<>();
+    private Logger logger;
 
     public RKNNPipeline() {
         super(PROCESSING_TYPE);
@@ -50,6 +57,13 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
     public RKNNPipeline(RKNNPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
+
+        logger = new Logger(
+            this.getClass(),
+            "RKNNPipeline " + settings.pipelineNickname,
+            LogGroup.Camera
+        );
+        unpackModelsIfNeeded();
 
         addModel(settings.selectedModel);
     }
@@ -162,4 +176,36 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         return new CVPipelineResult(
                 System.nanoTime() - sumPipeNanosElapsed, fps, targetList, input_frame);
     }
+
+    
+    void unpackModelsIfNeeded() {
+        var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
+        if (!modelsPath.toFile().exists()) {
+            logger.info("Unpacking RKNN models...");
+            var stream = getClass().getResourceAsStream("/models.zip");
+            if (stream == null) {
+                logger.error("Failed to find models.zip in jar");
+                return;
+            }
+            try {
+                Files.createDirectories(modelsPath);
+                var zip = new ZipInputStream(stream);
+                var entry = zip.getNextEntry();
+                while (entry != null) {
+                    var filePath = modelsPath.resolve(entry.getName());
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(filePath);
+                    } else {
+                        Files.copy(zip, filePath);
+                    }
+                    entry = zip.getNextEntry();
+                }
+                zip.close();
+            } catch (IOException e) {
+                logger.error("Failed to unpack models.zip");
+                e.printStackTrace();
+            }
+        }
+    }
+
 }
