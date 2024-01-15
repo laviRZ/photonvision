@@ -115,7 +115,6 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
                             new TargetCalculationParameters(
                                     false, null, null, null, null, this.frameStaticProperties)));
             if (settings.outputShouldShow) {
-
                 Imgproc.rectangle(
                         processed,
                         new Point(box.left, box.top),
