@@ -15,14 +15,14 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
 
 const currentSelectedModelIndex = computed(() => {
   const cps = currentPipelineSettings.value;
-  return cps.pipelineType === PipelineType.RKNN ?
-  useCameraSettingsStore().availableModels.indexOf(cps.selectedModel) : 0;
+  return cps.pipelineType === PipelineType.RKNN
+    ? useCameraSettingsStore().availableModels.indexOf(cps.selectedModel)
+    : 0;
 });
 
 const getModelName = (index: number) => {
   const cps = currentPipelineSettings.value;
-  return cps.pipelineType === PipelineType.RKNN ?
-  useCameraSettingsStore().availableModels[index] : "";
+  return cps.pipelineType === PipelineType.RKNN ? useCameraSettingsStore().availableModels[index] : "";
 };
 
 console.log("available: " + useCameraSettingsStore().availableModels);
@@ -54,7 +54,9 @@ const interactiveCols = computed(
       label="RKNN Model"
       tooltip="The RKNN model to use for inference."
       :items="useCameraSettingsStore().availableModels"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ selectedModel: getModelName(value) }, false)"
+      @input="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ selectedModel: getModelName(value) }, false)
+      "
     />
   </div>
 </template>

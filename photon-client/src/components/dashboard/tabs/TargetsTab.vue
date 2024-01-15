@@ -49,8 +49,8 @@ const resetCurrentBuffer = () => {
                 Fiducial ID
               </th>
               <template v-if="currentPipelineSettings.pipelineType === PipelineType.RKNN">
-                <th class="text-center white--text"> Class </th>
-                <th class="text-center white--text"> Confidence </th>
+                <th class="text-center white--text">Class</th>
+                <th class="text-center white--text">Confidence</th>
               </template>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center white--text">Pitch &theta;&deg;</th>

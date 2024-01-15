@@ -275,10 +275,13 @@ const handleSettingsImport = () => {
                     v-model="importFile"
                     :disabled="importType === -1"
                     :error-messages="importType === -1 ? 'Settings type not selected' : ''"
-                    :accept="importType === ImportType.AllSettings ? '.zip' :
-                    (
-                      importType === ImportType.RKNNModel ? '.rknn' : '.json'
-                    )"
+                    :accept="
+                      importType === ImportType.AllSettings
+                        ? '.zip'
+                        : importType === ImportType.RKNNModel
+                          ? '.rknn'
+                          : '.json'
+                    "
                   />
                 </v-row>
                 <v-row
