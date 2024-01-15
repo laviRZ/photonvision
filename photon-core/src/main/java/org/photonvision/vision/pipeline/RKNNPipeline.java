@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipInputStream;
-
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.configuration.ConfigManager;
@@ -58,11 +57,8 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         super(PROCESSING_TYPE);
         this.settings = settings;
 
-        logger = new Logger(
-            this.getClass(),
-            "RKNNPipeline " + settings.pipelineNickname,
-            LogGroup.Camera
-        );
+        logger =
+                new Logger(this.getClass(), "RKNNPipeline " + settings.pipelineNickname, LogGroup.Camera);
         unpackModelsIfNeeded();
 
         addModel(settings.selectedModel);
@@ -177,7 +173,6 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
                 System.nanoTime() - sumPipeNanosElapsed, fps, targetList, input_frame);
     }
 
-    
     void unpackModelsIfNeeded() {
         var modelsPath = ConfigManager.getInstance().getRKNNModelsPath();
         if (!modelsPath.toFile().exists()) {
@@ -207,5 +202,4 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
             }
         }
     }
-
 }
