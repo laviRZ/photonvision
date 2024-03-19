@@ -346,7 +346,7 @@ public class PipelineManager {
                 }
         }
     }
-    
+
     /**
      * Recreate the current user pipeline with the current pipeline index. Useful to force a
      * recreation after changing pipeline type
@@ -374,7 +374,7 @@ public class PipelineManager {
                 currentUserPipeline =
                         new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
                 break;
-                
+
             case RKNN:
                 logger.debug("Creating RKNN Pipeline");
                 currentUserPipeline = new RKNNPipeline((RKNNPipelineSettings) desiredPipelineSettings);
