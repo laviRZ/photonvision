@@ -50,7 +50,6 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
@@ -102,14 +101,10 @@ public class VisionModule {
                         visionSource.getSettables().getConfiguration().nickname,
                         LogGroup.VisionModule);
 
-        // Find quirks for the current camera
-        if (visionSource instanceof USBCameraSource) {
-            cameraQuirks = ((USBCameraSource) visionSource).getCameraQuirks();
-        } else if (visionSource instanceof LibcameraGpuSource) {
-            cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
-        } else {
-            cameraQuirks = QuirkyCamera.DefaultCamera;
-        }
+        cameraQuirks = visionSource.getCameraConfiguration().cameraQuirks;
+
+        if (visionSource.getCameraConfiguration().cameraQuirks == null)
+            visionSource.getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
 
         // We don't show gain if the config says it's -1. So check here to make sure it's non-negative
         // if it _is_ supported
@@ -352,11 +347,14 @@ public class VisionModule {
                         + " and settings "
                         + data);
         settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
+        settings.markerSize = Units.inchesToMeters(data.markerSizeIn);
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
         settings.useMrCal = data.useMrCal;
         settings.resolution = resolution;
+        settings.useOldPattern = data.useOldPattern;
+        settings.tagFamily = data.tagFamily;
 
         // Disable gain if not applicable
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
@@ -417,11 +415,11 @@ public class VisionModule {
 
         // If manual exposure, force exposure slider to be valid
         if (!pipelineSettings.cameraAutoExposure) {
-            if (pipelineSettings.cameraExposure < 0)
-                pipelineSettings.cameraExposure = 10; // reasonable default
+            if (pipelineSettings.cameraExposureRaw < 0)
+                pipelineSettings.cameraExposureRaw = 10; // reasonable default
         }
 
-        visionSource.getSettables().setExposure(pipelineSettings.cameraExposure);
+        visionSource.getSettables().setExposureRaw(pipelineSettings.cameraExposureRaw);
         try {
             visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
         } catch (VideoException e) {
@@ -459,7 +457,7 @@ public class VisionModule {
         // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use for
         // vision processing, and should command stuff to the LED's.
         // TODO: Make LED control a property of the camera itself and controllable in the UI.
-        return isVendorCamera() || cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+        return isVendorCamera();
     }
 
     private void setVisionLEDs(boolean on) {
@@ -572,10 +570,13 @@ public class VisionModule {
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
         ret.cameraQuirks = visionSource.getSettables().getConfiguration().cameraQuirks;
         ret.availableModels = getAvailableModels();
+        ret.maxExposureRaw = visionSource.getSettables().getMaxExposureRaw();
+        ret.minExposureRaw = visionSource.getSettables().getMinExposureRaw();
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
         var videoModes = visionSource.getSettables().getAllVideoModes();
+
         for (var k : videoModes.keySet()) {
             var internalMap = new HashMap<String, Object>();
 
@@ -601,8 +602,7 @@ public class VisionModule {
                         .collect(Collectors.toList());
 
         ret.isFovConfigurable =
-                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
-                        && cameraQuirks.hasQuirk(CameraQuirk.PiCam));
+                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV());
 
         return ret;
     }
@@ -680,6 +680,7 @@ public class VisionModule {
      */
     public void changeCameraQuirks(HashMap<CameraQuirk, Boolean> quirksToChange) {
         visionSource.getCameraConfiguration().cameraQuirks.updateQuirks(quirksToChange);
+        visionSource.remakeSettables();
         saveAndBroadcastAll();
     }
 }

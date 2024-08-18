@@ -22,9 +22,19 @@
  * SOFTWARE.
  */
 
+#include <chrono>
+#include <thread>
+#include <tuple>
+#include <vector>
+
+#include <wpi/deprecated.h>
+
 #include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"
 #include "photon/simulation/VisionSystemSim.h"
+
+// Ignore GetLatestResult warnings
+WPI_IGNORE_DEPRECATED
 
 class VisionSystemSimTest : public ::testing::Test {
   void SetUp() override {
@@ -224,9 +234,10 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
   robotPose =
       frc::Pose2d{frc::Translation2d{10_m, 0_m}, frc::Rotation2d{GetParam()}};
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
-  ASSERT_NEAR(GetParam().to<double>(),
-              camera.GetLatestResult().GetBestTarget().GetYaw(), 0.25);
+
+  const auto result = camera.GetLatestResult();
+  ASSERT_TRUE(result.HasTargets());
+  ASSERT_NEAR(GetParam().to<double>(), result.GetBestTarget().GetYaw(), 0.25);
 }
 
 TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
@@ -251,9 +262,10 @@ TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
           frc::Translation3d{},
           frc::Rotation3d{0_rad, units::degree_t{GetParam()}, 0_rad}});
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
-  ASSERT_NEAR(GetParam().to<double>(),
-              camera.GetLatestResult().GetBestTarget().GetPitch(), 0.25);
+
+  const auto result = camera.GetLatestResult();
+  ASSERT_TRUE(result.HasTargets());
+  ASSERT_NEAR(GetParam().to<double>(), result.GetBestTarget().GetPitch(), 0.25);
 }
 
 INSTANTIATE_TEST_SUITE_P(AnglesTests, VisionSystemSimTestWithParamsTest,
@@ -418,11 +430,8 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
       {photon::VisionTargetSim{tagList[0].pose, photon::kAprilTag16h5, 0}});
   visionSysSim.Update(robotPose);
 
-  Eigen::Matrix<double, 3, 3> camEigen;
-  cv::cv2eigen(camera.GetCameraMatrix().value(), camEigen);
-
-  Eigen::Matrix<double, 5, 1> distEigen;
-  cv::cv2eigen(camera.GetDistCoeffs().value(), distEigen);
+  Eigen::Matrix<double, 3, 3> camEigen = camera.GetCameraMatrix().value();
+  Eigen::Matrix<double, 8, 1> distEigen = camera.GetDistCoeffs().value();
 
   auto camResults = camera.GetLatestResult();
   auto targetSpan = camResults.GetTargets();

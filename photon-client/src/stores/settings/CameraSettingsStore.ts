@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type {
+  CalibrationTagFamilies,
   CalibrationBoardTypes,
   CameraCalibrationResult,
   CameraSettings,
@@ -70,6 +71,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     availableModels(): string[] {
       return this.currentCameraSettings.availableModels || [];
+    },
+    minExposureRaw(): number {
+      return this.currentCameraSettings.minExposureRaw;
+    },
+    maxExposureRaw(): number {
+      return this.currentCameraSettings.maxExposureRaw;
     }
   },
   actions: {
@@ -104,6 +111,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           })),
         completeCalibrations: d.calibrations,
         isCSICamera: d.isCSICamera,
+        minExposureRaw: d.minExposureRaw,
+        maxExposureRaw: d.maxExposureRaw,
         pipelineNicknames: d.pipelineNicknames,
         currentPipelineIndex: d.currentPipelineIndex,
         pipelineSettings: d.currentPipelineSettings,
@@ -318,10 +327,13 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     startPnPCalibration(
       calibrationInitData: {
         squareSizeIn: number;
+        markerSizeIn: number;
         patternWidth: number;
         patternHeight: number;
         boardType: CalibrationBoardTypes;
         useMrCal: boolean;
+        useOldPattern: boolean;
+        tagFamily: CalibrationTagFamilies;
       },
       cameraIndex: number = useStateStore().currentCameraIndex
     ) {

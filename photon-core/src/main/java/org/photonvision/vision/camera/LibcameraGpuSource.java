@@ -41,6 +41,9 @@ public class LibcameraGpuSource extends VisionSource {
                     "GPUAcceleratedPicamSource only accepts CameraConfigurations with type Picam");
         }
 
+        if (getCameraConfiguration().cameraQuirks == null)
+            getCameraConfiguration().cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
+
         settables = new LibcameraGpuSettables(configuration);
         frameProvider = new LibcameraGpuFrameProvider(settables);
     }
@@ -53,6 +56,12 @@ public class LibcameraGpuSource extends VisionSource {
     @Override
     public VisionSourceSettables getSettables() {
         return settables;
+    }
+
+    @Override
+    public void remakeSettables() {
+        // Nothing to do, settables for this type of VisionSource should never be remade.
+        return;
     }
 
     /**
@@ -84,5 +93,10 @@ public class LibcameraGpuSource extends VisionSource {
     @Override
     public boolean isVendorCamera() {
         return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV();
+    }
+
+    @Override
+    public boolean hasLEDs() {
+        return (ConfigManager.getInstance().getConfig().getHardwareConfig().ledPins.size() > 0);
     }
 }

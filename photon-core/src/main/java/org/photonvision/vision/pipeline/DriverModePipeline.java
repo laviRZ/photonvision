@@ -54,11 +54,6 @@ public class DriverModePipeline
 
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
-
-        // if (LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-        // LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
-        // LibCameraJNI.setShouldCopyColor(true);
-        // }
     }
 
     @Override
@@ -84,9 +79,15 @@ public class DriverModePipeline
 
         // Flip-flop input and output in the Frame
         return new DriverModePipelineResult(
+                frame.sequenceID,
                 MathUtils.nanosToMillis(totalNanos),
                 fps,
-                new Frame(frame.processedImage, frame.colorImage, frame.type, frame.frameStaticProperties));
+                new Frame(
+                        frame.sequenceID,
+                        frame.processedImage,
+                        frame.colorImage,
+                        frame.type,
+                        frame.frameStaticProperties));
     }
 
     @Override

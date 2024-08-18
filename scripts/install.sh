@@ -50,14 +50,14 @@ ARCH_NAME=""
 if [ "$ARCH" = "aarch64" ]; then
   ARCH_NAME="linuxarm64"
 elif [ "$ARCH" = "armv7l" ]; then
-  ARCH_NAME="linuxarm32"
+  echo "ARM32 is not supported by PhotonVision. Exiting."
+  exit 1
 elif [ "$ARCH" = "x86_64" ]; then
   ARCH_NAME="linuxx64"
 else
   if [ "$#" -ne 1 ]; then
       echo "Can't determine current arch; please provide it (one of):"
       echo ""
-      echo "- linuxarm32 (32-bit Linux ARM)"
       echo "- linuxarm64 (64-bit Linux ARM)"
       echo "- linuxx64   (64-bit Linux)"
       exit 1
@@ -102,9 +102,14 @@ else
     echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
 fi
 
+echo "Installing libatomic"
+apt-get install --yes libatomic1
+echo "libatomic installation complete."
+
 if [[ "$INSTALL_NETWORK_MANAGER" == "true" ]]; then
   echo "Installing network-manager..."
-  apt-get install --yes network-manager
+  apt-get install --yes network-manager net-tools
+  systemctl disable systemd-networkd-wait-online.service
   cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
   renderer: NetworkManager
@@ -120,19 +125,11 @@ then
 fi
 echo "JRE installation complete."
 
-if [ "$ARCH" == "aarch64" ]
-then
-    if package_is_installed libopencv-core4.6
-    then
-        echo "libopencv-core4.6 already installed"
-    else
-        # libphotonlibcamera.so on raspberry pi has dep on libopencv_core
-        echo "Installing libopencv-core4.6 on aarch64"
-        apt-get install --yes libopencv-core4.6
-    fi
-fi
-
 echo "Installing additional math packages"
+if [[ "$DISTRO" = "Ubuntu" && -z $(apt-cache search libcholmod3) ]]; then
+  echo "Adding jammy to list of apt sources"
+  add-apt-repository -y -S 'deb http://ports.ubuntu.com/ubuntu-ports jammy main universe'
+fi
 apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
 
 echo "Installing v4l-utils..."
@@ -155,8 +152,7 @@ echo "Downloaded latest stable release of PhotonVision."
 echo "Creating the PhotonVision systemd service..."
 
 # service --status-all doesn't list photonvision on OrangePi use systemctl instead:
-#if systemctl --quiet is-active photonvision; then
-if service --status-all | grep -Fq 'photonvision'; then
+if systemctl --quiet is-active photonvision; then
   echo "PhotonVision is already running. Stopping service."
   systemctl stop photonvision
   systemctl disable photonvision
@@ -190,6 +186,11 @@ EOF
 
 if [ "$DISABLE_NETWORKING" = "true" ]; then
   sed -i "s/photonvision.jar/photonvision.jar -n/" /lib/systemd/system/photonvision.service
+fi
+
+if [[ -n $(cat /proc/cpuinfo | grep "RK3588") ]]; then
+  echo "This has a Rockchip RK3588, enabling all cores"
+  sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=0-7/g' /lib/systemd/system/photonvision.service
 fi
 
 cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service

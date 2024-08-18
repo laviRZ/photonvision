@@ -59,6 +59,8 @@ export interface WebsocketCameraSettingsUpdate {
   videoFormatList: WebsocketVideoFormat;
   cameraQuirks: QuirkyCamera;
   availableModels?: string[];
+  minExposureRaw: number;
+  maxExposureRaw: number;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;
@@ -78,6 +80,7 @@ export interface WebsocketCalibrationData {
   videoModeIndex: number;
   patternHeight: number;
   squareSizeIn: number;
+  markerSizeIn: number;
 }
 
 export interface IncomingWebsocketData {
