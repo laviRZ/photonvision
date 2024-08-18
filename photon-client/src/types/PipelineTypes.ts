@@ -300,7 +300,7 @@ export const DefaultRKNNPipelineSettings: RKNNPipelineSettings = {
   targetModel: TargetModel.RapidReactCircularCargoBall,
   ledMode: false,
   outputShowMultipleTargets: false,
-  cameraExposure: 13,
+  cameraExposureRaw: 13,
   confidenceThreshold: 0.35,
   selectedModel: "model"
 };
