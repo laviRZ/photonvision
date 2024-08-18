@@ -278,8 +278,7 @@ public class PipelineManager {
                 break;
             case RKNN:
                 logger.debug("Creating RKNN Pipeline");
-                currentUserPipeline =
-                        new RKNNPipeline((RKNNPipelineSettings) desiredPipelineSettings);
+                currentUserPipeline = new RKNNPipeline((RKNNPipelineSettings) desiredPipelineSettings);
             default:
                 // Can be calib3d or drivermode, both of which are special cases
                 break;
@@ -352,44 +351,44 @@ public class PipelineManager {
         CVPipelineSettings newSettings;
         switch (type) {
             case Reflective:
-            {
-                var added = new ReflectivePipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
+                {
+                    var added = new ReflectivePipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
             case ColoredShape:
-            {
-                var added = new ColoredShapePipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
+                {
+                    var added = new ColoredShapePipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
             case AprilTag:
-            {
-                var added = new AprilTagPipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
+                {
+                    var added = new AprilTagPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
             case Aruco:
-            {
-                var added = new ArucoPipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
+                {
+                    var added = new ArucoPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
             case ObjectDetection:
-            {
-                var added = new ObjectDetectionPipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
+                {
+                    var added = new ObjectDetectionPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
             case RKNN:
                 var added = new RKNNPipelineSettings();
                 added.pipelineNickname = nickname;
                 return added;
             default:
-            {
-                logger.error("Got invalid pipeline type: " + type);
-                return null;
-            }
+                {
+                    logger.error("Got invalid pipeline type: " + type);
+                    return null;
+                }
         }
     }
 
