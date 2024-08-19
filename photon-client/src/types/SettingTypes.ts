@@ -148,14 +148,18 @@ export interface CameraCalibrationResult {
 export enum ValidQuirks {
   AWBGain = "AWBGain",
   AdjustableFocus = "AdjustableFocus",
-  ArduOV9281 = "ArduOV9281",
-  ArduOV2311 = "ArduOV2311",
+  InnoOV9281Controls = "InnoOV9281Controls",
+  ArduOV9281Controls = "ArduOV9281Controls",
+  ArduOV2311Controls = "ArduOV2311Controls",
+  ArduOV9782Controls = "ArduOV9782Controls",
   ArduCamCamera = "ArduCamCamera",
   CompletelyBroken = "CompletelyBroken",
   FPSCap100 = "FPSCap100",
   Gain = "Gain",
   PiCam = "PiCam",
-  StickyFPS = "StickyFPS"
+  StickyFPS = "StickyFPS",
+  LifeCamControls = "LifeCamControls",
+  PsEyeControls = "PsEyeControls"
 }
 
 export interface QuirkyCamera {
@@ -191,6 +195,8 @@ export interface CameraSettings {
   isCSICamera: boolean;
 
   availableModels?: string[];
+  minExposureRaw: number;
+  maxExposureRaw: number;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -281,6 +287,7 @@ export const PlaceholderCameraSettings: CameraSettings = {
       AdjustableFocus: false,
       ArduOV9281: false,
       ArduOV2311: false,
+      ArduOV9782: false,
       ArduCamCamera: false,
       CompletelyBroken: false,
       FPSCap100: false,
@@ -289,12 +296,21 @@ export const PlaceholderCameraSettings: CameraSettings = {
       StickyFPS: false
     }
   },
-  isCSICamera: false
+  isCSICamera: false,
+  minExposureRaw: 1,
+  maxExposureRaw: 100
 };
 
 export enum CalibrationBoardTypes {
   Chessboard = 0,
-  DotBoard = 1
+  Charuco = 1
+}
+
+export enum CalibrationTagFamilies {
+  Dict_4X4_1000 = 0,
+  Dict_5X5_1000 = 1,
+  Dict_6X6_1000 = 2,
+  Dict_7X7_1000 = 3
 }
 
 export enum RobotOffsetType {

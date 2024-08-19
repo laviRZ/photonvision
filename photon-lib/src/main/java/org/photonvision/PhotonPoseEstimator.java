@@ -36,7 +36,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.numbers.N5;
+import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -87,10 +87,9 @@ public class PhotonPoseEstimator {
     }
 
     private AprilTagFieldLayout fieldTags;
-    private TargetModel tagModel = TargetModel.kAprilTag16h5;
+    private TargetModel tagModel = TargetModel.kAprilTag36h11;
     private PoseStrategy primaryStrategy;
     private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
-    private final PhotonCamera camera;
     private Transform3d robotToCamera;
 
     private Pose3d lastPose;
@@ -107,29 +106,19 @@ public class PhotonPoseEstimator {
      *     Coordinate System</a>. Note that setting the origin of this layout object will affect the
      *     results from this class.
      * @param strategy The strategy it should use to determine the best pose.
-     * @param camera PhotonCamera
      * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
      *     robot ➔ camera) in the <a href=
      *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
      *     Coordinate System</a>.
      */
     public PhotonPoseEstimator(
-            AprilTagFieldLayout fieldTags,
-            PoseStrategy strategy,
-            PhotonCamera camera,
-            Transform3d robotToCamera) {
+            AprilTagFieldLayout fieldTags, PoseStrategy strategy, Transform3d robotToCamera) {
         this.fieldTags = fieldTags;
         this.primaryStrategy = strategy;
-        this.camera = camera;
         this.robotToCamera = robotToCamera;
 
         HAL.report(tResourceType.kResourceType_PhotonPoseEstimator, InstanceCount);
         InstanceCount++;
-    }
-
-    public PhotonPoseEstimator(
-            AprilTagFieldLayout fieldTags, PoseStrategy strategy, Transform3d robotToCamera) {
-        this(fieldTags, strategy, null, robotToCamera);
     }
 
     /** Invalidates the pose cache. */
@@ -169,7 +158,7 @@ public class PhotonPoseEstimator {
     /**
      * Get the TargetModel representing the tags being detected. This is used for on-rio multitag.
      *
-     * <p>By default, this is {@link TargetModel#kAprilTag16h5}.
+     * <p>By default, this is {@link TargetModel#kAprilTag36h11}.
      */
     public TargetModel getTagModel() {
         return tagModel;
@@ -288,45 +277,24 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Poll data from the configured cameras and update the estimated position of the robot. Returns
-     * empty if:
-     *
-     * <ul>
-     *   <li>New data has not been received since the last call to {@code update()}.
-     *   <li>No targets were found from the camera
-     *   <li>There is no camera set
-     * </ul>
-     *
-     * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
-     */
-    public Optional<EstimatedRobotPose> update() {
-        if (camera == null) {
-            DriverStation.reportError("[PhotonPoseEstimator] Missing camera!", false);
-            return Optional.empty();
-        }
-
-        PhotonPipelineResult cameraResult = camera.getLatestResult();
-
-        return update(cameraResult, camera.getCameraMatrix(), camera.getDistCoeffs());
-    }
-
-    /**
-     * Updates the estimated position of the robot. Returns empty if:
+     * Updates the estimated position of the robot, assuming no camera calibration is required for the
+     * selected strategy. Returns empty if:
      *
      * <ul>
      *   <li>The timestamp of the provided pipeline result is the same as in the previous call to
      *       {@code update()}.
      *   <li>No targets were found in the pipeline results.
      * </ul>
+     *
+     * Will report a warning if strategy is multi-tag-on-rio, but camera calibration data is not
+     * provided
      *
      * @param cameraResult The latest pipeline result from the camera
      * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
      *     create the estimate.
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
-        if (camera == null) return update(cameraResult, Optional.empty(), Optional.empty());
-        return update(cameraResult, camera.getCameraMatrix(), camera.getDistCoeffs());
+        return update(cameraResult, Optional.empty(), Optional.empty());
     }
 
     /**
@@ -338,17 +306,17 @@ public class PhotonPoseEstimator {
      *   <li>No targets were found in the pipeline results.
      * </ul>
      *
-     * @param cameraMatrix Camera calibration data that can be used in the case of no assigned
-     *     PhotonCamera.
-     * @param distCoeffs Camera calibration data that can be used in the case of no assigned
-     *     PhotonCamera
+     * @param cameraMatrix Camera calibration data for multi-tag-on-rio strategy - can be empty
+     *     otherwise
+     * @param distCoeffs Camera calibration data for multi-tag-on-rio strategy - can be empty
+     *     otherwise
      * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
      *     create the estimate.
      */
     public Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
-            Optional<Matrix<N5, N1>> distCoeffs) {
+            Optional<Matrix<N8, N1>> distCoeffs) {
         // Time in the past -- give up, since the following if expects times > 0
         if (cameraResult.getTimestampSeconds() < 0) {
             return Optional.empty();
@@ -376,9 +344,9 @@ public class PhotonPoseEstimator {
     private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
-            Optional<Matrix<N5, N1>> distCoeffs,
+            Optional<Matrix<N8, N1>> distCoeffs,
             PoseStrategy strat) {
-        Optional<EstimatedRobotPose> estimatedPose;
+        Optional<EstimatedRobotPose> estimatedPose = Optional.empty();
         switch (strat) {
             case LOWEST_AMBIGUITY:
                 estimatedPose = lowestAmbiguityStrategy(cameraResult);
@@ -397,10 +365,20 @@ public class PhotonPoseEstimator {
                 estimatedPose = averageBestTargetsStrategy(cameraResult);
                 break;
             case MULTI_TAG_PNP_ON_RIO:
-                estimatedPose = multiTagOnRioStrategy(cameraResult, cameraMatrix, distCoeffs);
+                if (cameraMatrix.isEmpty()) {
+                    DriverStation.reportWarning(
+                            "Camera matrix is empty for multi-tag-on-rio",
+                            Thread.currentThread().getStackTrace());
+                } else if (distCoeffs.isEmpty()) {
+                    DriverStation.reportWarning(
+                            "Camera matrix is empty for multi-tag-on-rio",
+                            Thread.currentThread().getStackTrace());
+                } else {
+                    estimatedPose = multiTagOnRioStrategy(cameraResult, cameraMatrix, distCoeffs);
+                }
                 break;
             case MULTI_TAG_PNP_ON_COPROCESSOR:
-                estimatedPose = multiTagOnCoprocStrategy(cameraResult, cameraMatrix, distCoeffs);
+                estimatedPose = multiTagOnCoprocStrategy(cameraResult);
                 break;
             default:
                 DriverStation.reportError(
@@ -415,10 +393,7 @@ public class PhotonPoseEstimator {
         return estimatedPose;
     }
 
-    private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(
-            PhotonPipelineResult result,
-            Optional<Matrix<N3, N3>> cameraMatrixOpt,
-            Optional<Matrix<N5, N1>> distCoeffsOpt) {
+    private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(PhotonPipelineResult result) {
         if (result.getMultiTagResult().estimatedPose.isPresent) {
             var best_tf = result.getMultiTagResult().estimatedPose.best;
             var best =
@@ -433,14 +408,15 @@ public class PhotonPoseEstimator {
                             result.getTargets(),
                             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR));
         } else {
-            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
+            // We can nver fall back on another multitag strategy
+            return update(result, Optional.empty(), Optional.empty(), this.multiTagFallbackStrategy);
         }
     }
 
     private Optional<EstimatedRobotPose> multiTagOnRioStrategy(
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
-            Optional<Matrix<N5, N1>> distCoeffsOpt) {
+            Optional<Matrix<N8, N1>> distCoeffsOpt) {
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
         // cannot run multitagPNP, use fallback strategy
         if (!hasCalibData || result.getTargets().size() < 2) {

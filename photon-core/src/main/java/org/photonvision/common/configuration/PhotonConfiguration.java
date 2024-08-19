@@ -178,7 +178,8 @@ public class PhotonConfiguration {
         public boolean isFovConfigurable = true;
         public QuirkyCamera cameraQuirks;
         public boolean isCSICamera;
-
         public String[] availableModels;
+        public double minExposureRaw;
+        public double maxExposureRaw;
     }
 }

@@ -392,12 +392,12 @@ public class RequestHandler {
     public static void onGeneralSettingsRequest(Context ctx) {
         NetworkConfig config;
         try {
-            config = kObjectMapper.readValue(ctx.body(), NetworkConfig.class);
+            config = kObjectMapper.readValue(ctx.bodyInputStream(), NetworkConfig.class);
 
             ctx.status(200);
             ctx.result("Successfully saved general settings");
             logger.info("Successfully saved general settings");
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             // If the settings can't be parsed, use the default network settings
             config = new NetworkConfig();
 
@@ -424,7 +424,7 @@ public class RequestHandler {
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.body());
+            var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
             int index = data.get("index").asInt();
             var settings =
@@ -494,7 +494,7 @@ public class RequestHandler {
         int index;
 
         try {
-            index = kObjectMapper.readTree(ctx.body()).get("index").asInt();
+            index = kObjectMapper.readTree(ctx.bodyInputStream()).get("index").asInt();
 
             var calData = VisionModuleManager.getInstance().getModule(index).endCalibration();
             if (calData == null) {
@@ -525,7 +525,7 @@ public class RequestHandler {
     }
 
     public static void onCalibDBCalibrationImportRequest(Context ctx) {
-        var data = ctx.body();
+        var data = ctx.bodyInputStream();
 
         try {
             var actualObj = kObjectMapper.readTree(data);
@@ -546,7 +546,7 @@ public class RequestHandler {
             ctx.status(200);
             ctx.result("Calibration imported successfully from CalibDB data!");
             logger.info("Calibration imported successfully from CalibDB data!");
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             ctx.status(400);
             ctx.result(
                     "The Provided CalibDB data is malformed and cannot be parsed for the required fields.");
@@ -558,7 +558,7 @@ public class RequestHandler {
 
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.body());
+            var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
             int cameraIndex = data.get("cameraIndex").asInt();
             var coeffs =
@@ -600,7 +600,7 @@ public class RequestHandler {
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.body());
+            var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
             String name = data.get("name").asText();
             int idx = data.get("cameraIndex").asInt();

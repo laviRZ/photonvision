@@ -13,23 +13,32 @@ const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
 
 const arducamSelectWrapper = computed<number>({
   get: () => {
-    if (tempSettingsStruct.value.quirksToChange.ArduOV9281) return 1;
-    else if (tempSettingsStruct.value.quirksToChange.ArduOV2311) return 2;
+    if (tempSettingsStruct.value.quirksToChange.ArduOV9281Controls) return 1;
+    else if (tempSettingsStruct.value.quirksToChange.ArduOV2311Controls) return 2;
+    else if (tempSettingsStruct.value.quirksToChange.ArduOV9782Controls) return 3;
     else return 0;
   },
   set: (v) => {
     switch (v) {
       case 1:
-        tempSettingsStruct.value.quirksToChange.ArduOV9281 = true;
-        tempSettingsStruct.value.quirksToChange.ArduOV2311 = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV9281Controls = true;
+        tempSettingsStruct.value.quirksToChange.ArduOV2311Controls = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV9782Controls = false;
         break;
       case 2:
-        tempSettingsStruct.value.quirksToChange.ArduOV9281 = false;
-        tempSettingsStruct.value.quirksToChange.ArduOV2311 = true;
+        tempSettingsStruct.value.quirksToChange.ArduOV9281Controls = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV2311Controls = true;
+        tempSettingsStruct.value.quirksToChange.ArduOV9782Controls = false;
+        break;
+      case 3:
+        tempSettingsStruct.value.quirksToChange.ArduOV9281Controls = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV2311Controls = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV9782Controls = true;
         break;
       default:
-        tempSettingsStruct.value.quirksToChange.ArduOV9281 = false;
-        tempSettingsStruct.value.quirksToChange.ArduOV2311 = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV9281Controls = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV2311Controls = false;
+        tempSettingsStruct.value.quirksToChange.ArduOV9782Controls = false;
         break;
     }
   }
@@ -129,7 +138,8 @@ watchEffect(() => {
         :items="[
           { name: 'None', value: 0, disabled: true },
           { name: 'OV9281', value: 1 },
-          { name: 'OV2311', value: 2 }
+          { name: 'OV2311', value: 2 },
+          { name: 'OV9782', value: 3 }
         ]"
         :select-cols="8"
       />

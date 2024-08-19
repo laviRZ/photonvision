@@ -107,14 +107,15 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         long timeStarted = System.nanoTime();
         long sumPipeNanosElapsed = 0;
 
-        input_frame.processedImage.copyTo(input_frame.colorImage);
+        input_frame.colorImage.copyFrom(input_frame.processedImage);
         var processed = input_frame.processedImage.getMat();
 
         CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult = rknnPipe.run(input_frame.colorImage);
         sumPipeNanosElapsed += rknnResult.nanosElapsed;
 
-        if (rknnResult.output.size() == 0)
-            return new CVPipelineResult(0, calculateFPSPipe.run(null).output, List.of(), input_frame);
+        if (rknnResult.output.isEmpty())
+            return new CVPipelineResult(
+                    input_frame.sequenceID, 0, calculateFPSPipe.run(null).output, List.of(), input_frame);
 
         var filterContoursResult = filterContoursPipe.run(rknnResult.output);
         sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
@@ -172,6 +173,7 @@ public class RKNNPipeline extends CVPipeline<CVPipelineResult, RKNNPipelineSetti
         // // input_frame.colorImage.getMat(), size);
 
         return new CVPipelineResult(
+                input_frame.sequenceID,
                 (System.nanoTime() - timeStarted) * 1e-6,
                 calculateFPSPipe.run(null).output,
                 collect2dTargetsResult.output,
