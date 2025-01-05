@@ -19,6 +19,8 @@ package org.photonvision.jni;
 
 import java.io.IOException;
 import java.util.List;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 
 public class RknnDetectorJNI extends PhotonJNICommon {
