@@ -167,3 +167,5 @@ photon-lib/src/generate/native/cpp/PhotonVersion.cpp
 venv
 
 !photon-core/src/main/resources/models.zip
+.venv/*
+.venv

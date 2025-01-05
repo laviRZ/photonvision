@@ -78,6 +78,9 @@ export interface PipelineSettings {
   hsvSaturation: WebsocketNumberPair | [number, number];
   pipelineType: PipelineType;
   contourIntersection: number;
+
+  cameraAutoWhiteBalance: boolean;
+  cameraWhiteBalanceTemp: number;
 }
 export type ConfigurablePipelineSettings = Partial<
   Omit<
@@ -138,7 +141,9 @@ export const DefaultPipelineSettings: Omit<
   cornerDetectionStrategy: 0,
   cornerDetectionAccuracyPercentage: 10,
   hsvSaturation: { first: 50, second: 255 },
-  contourIntersection: 1
+  contourIntersection: 1,
+  cameraAutoWhiteBalance: false,
+  cameraWhiteBalanceTemp: 4000
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
@@ -310,6 +315,7 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   confidence: number;
   nms: number;
   box_thresh: number;
+  model: string;
 }
 export type ConfigurableObjectDetectionPipelineSettings = Partial<
   Omit<ObjectDetectionPipelineSettings, "pipelineType">
@@ -325,7 +331,8 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   cameraExposureRaw: 6,
   confidence: 0.9,
   nms: 0.45,
-  box_thresh: 0.25
+  box_thresh: 0.25,
+  model: ""
 };
 
 export type ActivePipelineSettings =

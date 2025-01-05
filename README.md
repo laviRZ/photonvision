@@ -31,14 +31,19 @@ You can run one of the many built in examples straight from the command line, to
 
 Note that these are case sensitive!
 
-* `-PArchOverride=foobar`: builds for a target system other than your current architecture. Valid overrides are:
-    * linuxathena
+* `-PArchOverride=foobar`: builds for a target system other than your current architecture. [Valid overrides](https://github.com/wpilibsuite/wpilib-tool-plugin/blob/main/src/main/java/edu/wpi/first/tools/NativePlatforms.java) are:
+    * winx32
+    * winx64
+    * winarm64
+    * macx64
+    * macarm64
+    * linuxx64
     * linuxarm64
-    * arm64
-    * x86-64
-    * x86
-- `-PtgtIp`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
+    * linuxathena
+- `-PtgtIP`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
 - `-Pprofile`: enables JVM profiling
+
+If you're cross-compiling, you'll need the wpilib toolchain installed. This can be done via Gradle: for example `./gradlew installArm64Toolchain` or `./gradlew installRoboRioToolchain`
 
 ## Out-of-Source Dependencies
 

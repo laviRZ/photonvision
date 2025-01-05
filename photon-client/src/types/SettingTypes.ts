@@ -7,7 +7,8 @@ export interface GeneralSettings {
   hardwareModel?: string;
   hardwarePlatform?: string;
   mrCalWorking: boolean;
-  rknnSupported: boolean;
+  availableModels: Record<string, string[]>;
+  supportedBackends: string[];
 }
 
 export interface MetricData {
@@ -71,6 +72,7 @@ export enum LogLevel {
 export interface LogMessage {
   level: LogLevel;
   message: string;
+  timestamp: Date;
 }
 
 export interface Resolution {
@@ -197,6 +199,9 @@ export interface CameraSettings {
   availableModels?: string[];
   minExposureRaw: number;
   maxExposureRaw: number;
+
+  minWhiteBalanceTemp: number;
+  maxWhiteBalanceTemp: number;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -285,20 +290,25 @@ export const PlaceholderCameraSettings: CameraSettings = {
     quirks: {
       AWBGain: false,
       AdjustableFocus: false,
-      ArduOV9281: false,
-      ArduOV2311: false,
-      ArduOV9782: false,
+      ArduOV9281Controls: false,
+      ArduOV2311Controls: false,
+      ArduOV9782Controls: false,
       ArduCamCamera: false,
       CompletelyBroken: false,
       FPSCap100: false,
       Gain: false,
       PiCam: false,
-      StickyFPS: false
+      StickyFPS: false,
+      InnoOV9281Controls: false,
+      LifeCamControls: false,
+      PsEyeControls: false
     }
   },
   isCSICamera: false,
   minExposureRaw: 1,
-  maxExposureRaw: 100
+  maxExposureRaw: 100,
+  minWhiteBalanceTemp: 2000,
+  maxWhiteBalanceTemp: 10000
 };
 
 export enum CalibrationBoardTypes {

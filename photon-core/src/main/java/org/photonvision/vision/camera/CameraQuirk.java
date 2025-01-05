@@ -27,7 +27,7 @@ public enum CameraQuirk {
     /** Cap at 100FPS for high-bandwidth cameras */
     FPSCap100,
     /** Separate red/blue gain controls available */
-    AWBGain,
+    AwbRedBlueGain,
     /** Will not work with photonvision - Logitec C270 at least */
     CompletelyBroken,
     /** Has adjustable focus and autofocus switch */
@@ -45,8 +45,11 @@ public enum CameraQuirk {
     ArduOV2311Controls,
     ArduOV9782Controls,
     /**
-     * Camera is innomaker USB OV9281 which also has incorrect v4l exposure times Real range is more
-     * like 0-500
+     * Camera is one brand of USB OV9281 which also has incorrect v4l exposure times Real range is
+     * more like 0-500
      */
     InnoOV9281Controls,
+    ArduOV9782,
+    /** Camera has odd exposure range, and supports gain control */
+    See3Cam_24CUG,
 }
