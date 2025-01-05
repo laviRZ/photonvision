@@ -136,7 +136,7 @@ const validNewPipelineTypes = computed(() => {
     { name: "Aruco", value: WebsocketPipelineType.Aruco },
     { name: "RKNN", value: WebsocketPipelineType.RKNN }
   ];
-  if (useSettingsStore().general.rknnSupported) {
+  if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
   }
   return pipelineTypes;
@@ -175,7 +175,7 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "Aruco", value: WebsocketPipelineType.Aruco },
     { name: "RKNN", value: WebsocketPipelineType.RKNN }
   ];
-  if (useSettingsStore().general.rknnSupported) {
+  if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
   }
 

@@ -61,6 +61,8 @@ export interface WebsocketCameraSettingsUpdate {
   availableModels?: string[];
   minExposureRaw: number;
   maxExposureRaw: number;
+  minWhiteBalanceTemp: number;
+  maxWhiteBalanceTemp: number;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;
